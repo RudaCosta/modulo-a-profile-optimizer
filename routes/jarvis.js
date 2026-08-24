@@ -1265,4 +1265,92 @@ router.get('/api/jarvis/call/:id', requireAuth, (req, res) => {
   }
 });
 
+// ── API: sync periódico de calls do Zoho → JARVIS ──────────────────────────
+// Busca calls recentes no Zoho CRM (com gravação 3CX) e ingere as novas.
+// Chamado por cron externo ou manualmente: GET /api/jarvis/sync-zoho-calls?secret=...
+router.get('/api/jarvis/sync-zoho-calls', async (req, res) => {
+  const tag = '[jarvis/sync-zoho-calls]';
+  try {
+    const secret = ZOHO_WEBHOOK_SECRET();
+    if (secret) {
+      const incoming = req.query.secret || '';
+      if (incoming !== secret) return res.status(401).json({ success: false, error: 'Unauthorized' });
+    }
+
+    const refreshToken = process.env.ZOHO_REFRESH_TOKEN;
+    const clientId     = process.env.ZOHO_CLIENT_ID;
+    const clientSecret = process.env.ZOHO_CLIENT_SECRET;
+    if (!refreshToken || !clientId || !clientSecret) {
+      return res.status(500).json({ success: false, error: 'Credenciais Zoho OAuth2 não configuradas (ZOHO_REFRESH_TOKEN, ZOHO_CLIENT_ID, ZOHO_CLIENT_SECRET).' });
+    }
+
+    // 1) Obter access token
+    const tokenRes = await fetch(
+      `https://accounts.zoho.com/oauth/v2/token?refresh_token=${refreshToken}&client_id=${clientId}&client_secret=${clientSecret}&grant_type=refresh_token`,
+      { method: 'POST' }
+    );
+    const tokenJson = await tokenRes.json();
+    if (!tokenJson.access_token) {
+      console.error(tag, 'falha ao obter token:', tokenJson);
+      return res.status(500).json({ success: false, error: 'Falha ao obter access_token do Zoho.' });
+    }
+    const token = tokenJson.access_token;
+
+    // 2) Buscar calls recentes (últimos 30 dias, com gravação)
+    const daysBack = parseInt(req.query.days, 10) || 30;
+    const since = new Date(Date.now() - daysBack * 86400000).toISOString().split('T')[0];
+    const coql = `SELECT id, Subject, Call_Duration, Call_Start_Time, Description, Who_Id, What_Id FROM Calls WHERE Call_Start_Time >= '${since}' ORDER BY Call_Start_Time DESC LIMIT 100`;
+
+    const coqlRes = await fetch('https://www.zohoapis.com/crm/v7/coql', {
+      method: 'POST',
+      headers: { 'Authorization': `Zoho-oauthtoken ${token}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ select_query: coql })
+    });
+    const coqlJson = await coqlRes.json();
+    const calls = coqlJson.data || [];
+    console.log(tag, `${calls.length} calls encontradas no Zoho (desde ${since})`);
+
+    // 3) Filtrar só as que têm Recording na Description e ainda não foram ingeridas
+    const existingIds = new Set(
+      db.prepare('SELECT zoho_call_id FROM jarvis_calls WHERE zoho_call_id IS NOT NULL').all().map(r => r.zoho_call_id)
+    );
+
+    const novas = calls.filter(c => {
+      const desc = String(c.Description || '');
+      return desc.includes('Recording:') && !existingIds.has(String(c.id));
+    });
+    console.log(tag, `${novas.length} calls novas pra ingerir (${calls.length - novas.length} já existem)`);
+
+    if (!novas.length) {
+      return res.json({ success: true, message: 'Nenhuma call nova.', total_zoho: calls.length, novas: 0, resultados: [] });
+    }
+
+    // 4) Ingerir cada call nova via self-call HTTP
+    const baseUrl = `${req.protocol}://${req.get('host')}`;
+    const ingestSecret = secret ? `?secret=${secret}` : '';
+    const resultados = [];
+
+    for (const call of novas) {
+      try {
+        const ingestRes = await fetch(`${baseUrl}/api/jarvis/ingest-zoho-call${ingestSecret}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(call)
+        });
+        const r = await ingestRes.json();
+        resultados.push({ zoho_call_id: call.id, success: r.success, prospect: r.prospect, aprendizados: r.total_aprendizados || 0 });
+        console.log(tag, `✓ ${call.id} → ${r.success ? 'ok' : 'erro'} (${r.total_aprendizados || 0} aprendizados)`);
+      } catch (e) {
+        resultados.push({ zoho_call_id: call.id, success: false, error: e.message });
+        console.warn(tag, `✗ ${call.id}:`, e.message);
+      }
+    }
+
+    res.json({ success: true, total_zoho: calls.length, novas: novas.length, resultados });
+  } catch (e) {
+    console.error(tag, 'erro:', e.message);
+    res.status(500).json({ success: false, error: e.message });
+  }
+});
+
 module.exports = router;
