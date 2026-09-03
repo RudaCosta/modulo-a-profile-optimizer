@@ -6031,6 +6031,7 @@ app.use('/', require('./routes/loja')); // Módulo 19 — Loja de ERP Coins (/lo
 app.use('/', require('./routes/voices-pipeline')); // Módulo 20 — pipeline de validação/publicação dos Voices
 app.use('/', require('./routes/comunicados')); // Modulo 21 -- fila de comunicados por e-mail
 app.use('/', require('./routes/cafezinho')); // Módulo 22 — Cafezinho (área pessoal do time)
+app.use('/', require('./routes/horas'));      // Módulo 23 — Banco de Horas MKT
 
 app.listen(PORT, () => {
   console.log(`\n🎙️  EPI-USE Voices — Profile Optimizer`);

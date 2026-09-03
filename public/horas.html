@@ -1,0 +1,398 @@
+<!doctype html>
+<html lang="pt-BR" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>⏰ Banco de Horas · EPI-USE Office</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&family=Fira+Code:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/design-tokens.css">
+<link rel="stylesheet" href="/css/polish-pro.css">
+<link rel="stylesheet" href="/css/consulting-dark.css">
+<style>
+:root {
+  --hr-bg: #0a1525;
+  --hr-surface: #0f1e35;
+  --hr-surface-2: #142547;
+  --hr-border: rgba(134,158,195,.18);
+  --hr-text: #e6ebf2;
+  --hr-text-dim: #c0ccd9;
+  --hr-text-muted: #869ec3;
+  --hr-accent: #60a5fa;
+  --hr-success: #10b981;
+  --hr-danger: #ef4444;
+  --hr-warning: #fbbf24;
+  --hr-radius: 14px;
+}
+[data-theme="light"] {
+  --hr-bg: #f0f4f8;
+  --hr-surface: #ffffff;
+  --hr-surface-2: #f8fafc;
+  --hr-border: rgba(0,24,68,.12);
+  --hr-text: #001844;
+  --hr-text-dim: #1e3a5f;
+  --hr-text-muted: #5b7a9c;
+}
+body {
+  background: var(--hr-bg);
+  color: var(--hr-text);
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  margin: 0;
+  min-height: 100vh;
+}
+.hr-wrap {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 24px 18px 60px;
+}
+.hr-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 28px;
+  flex-wrap: wrap;
+}
+.hr-header h1 {
+  font-family: 'Poppins', sans-serif;
+  font-size: 24px;
+  font-weight: 700;
+  margin: 0;
+}
+.hr-back {
+  font-size: 13px;
+  color: var(--hr-accent);
+  text-decoration: none;
+  border: 1px solid rgba(96,165,250,.25);
+  padding: 5px 12px;
+  border-radius: 8px;
+  transition: all .15s;
+}
+.hr-back:hover { background: rgba(96,165,250,.1); }
+
+/* ── SALDO CARD ──────────────────────────────────────── */
+.hr-saldo-card {
+  background: var(--hr-surface);
+  border: 1px solid var(--hr-border);
+  border-radius: var(--hr-radius);
+  padding: 24px 28px;
+  margin-bottom: 24px;
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+.hr-saldo-num {
+  font-family: 'Fira Code', monospace;
+  font-size: 42px;
+  font-weight: 700;
+  line-height: 1;
+}
+.hr-saldo-num.pos { color: var(--hr-success); }
+.hr-saldo-num.neg { color: var(--hr-danger); }
+.hr-saldo-num.zero { color: var(--hr-text-muted); }
+.hr-saldo-label {
+  font-size: 13px;
+  color: var(--hr-text-muted);
+  margin-top: 4px;
+}
+
+/* ── FORM ─────────────────────────────────────────────── */
+.hr-form-card {
+  background: var(--hr-surface);
+  border: 1px solid var(--hr-border);
+  border-radius: var(--hr-radius);
+  padding: 20px 24px;
+  margin-bottom: 24px;
+}
+.hr-form-title {
+  font-size: 15px;
+  font-weight: 700;
+  margin: 0 0 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.hr-form-grid {
+  display: grid;
+  grid-template-columns: 140px 100px 1fr 140px;
+  gap: 10px;
+  align-items: end;
+}
+@media (max-width: 700px) {
+  .hr-form-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+.hr-field label {
+  display: block;
+  font-size: 11px;
+  color: var(--hr-text-muted);
+  margin-bottom: 4px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+}
+.hr-field input, .hr-field select {
+  width: 100%;
+  background: var(--hr-surface-2);
+  border: 1px solid var(--hr-border);
+  border-radius: 8px;
+  padding: 9px 12px;
+  color: var(--hr-text);
+  font-family: inherit;
+  font-size: 13px;
+  box-sizing: border-box;
+}
+.hr-field input:focus, .hr-field select:focus {
+  outline: none;
+  border-color: var(--hr-accent);
+  box-shadow: 0 0 0 3px rgba(96,165,250,.15);
+}
+.hr-btn {
+  background: var(--hr-accent);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 18px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all .15s;
+  font-family: inherit;
+}
+.hr-btn:hover { filter: brightness(1.1); transform: translateY(-1px); }
+.hr-btn:disabled { opacity: .5; cursor: not-allowed; }
+
+/* ── TOGGLE ADMIN ─────────────────────────────────────── */
+.hr-admin-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+.hr-admin-bar select {
+  background: var(--hr-surface);
+  border: 1px solid var(--hr-border);
+  border-radius: 8px;
+  padding: 7px 12px;
+  color: var(--hr-text);
+  font-family: inherit;
+  font-size: 13px;
+}
+.hr-admin-chip {
+  font-size: 11px;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-weight: 700;
+  font-family: 'Fira Code', monospace;
+}
+.hr-admin-chip.pos { background: rgba(16,185,129,.14); color: #6ee7b7; }
+.hr-admin-chip.neg { background: rgba(239,68,68,.14); color: #fca5a5; }
+.hr-admin-chip.zero { background: rgba(134,158,195,.1); color: var(--hr-text-muted); }
+
+/* ── TEAM OVERVIEW (HEAD) ─────────────────────────────── */
+.hr-team-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 10px;
+  margin-bottom: 24px;
+}
+.hr-team-card {
+  background: var(--hr-surface);
+  border: 1px solid var(--hr-border);
+  border-radius: 12px;
+  padding: 16px;
+  cursor: pointer;
+  transition: all .15s;
+}
+.hr-team-card:hover {
+  border-color: var(--hr-accent);
+  background: var(--hr-surface-2);
+}
+.hr-team-card.active {
+  border-color: var(--hr-accent);
+  box-shadow: 0 0 0 2px rgba(96,165,250,.2);
+}
+.hr-team-name {
+  font-size: 14px;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+.hr-team-saldo {
+  font-family: 'Fira Code', monospace;
+  font-size: 22px;
+  font-weight: 700;
+}
+.hr-team-saldo.pos { color: var(--hr-success); }
+.hr-team-saldo.neg { color: var(--hr-danger); }
+.hr-team-saldo.zero { color: var(--hr-text-muted); }
+.hr-team-sub {
+  font-size: 11px;
+  color: var(--hr-text-muted);
+  margin-top: 2px;
+}
+.hr-team-alert {
+  display: inline-block;
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  margin-top: 6px;
+  background: rgba(251,191,36,.14);
+  color: var(--hr-warning);
+  font-weight: 700;
+}
+
+/* ── TABLE ────────────────────────────────────────────── */
+.hr-table-wrap {
+  overflow-x: auto;
+  background: var(--hr-surface);
+  border: 1px solid var(--hr-border);
+  border-radius: var(--hr-radius);
+}
+.hr-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.hr-table th {
+  text-align: left;
+  padding: 12px 14px;
+  font-size: 11px;
+  color: var(--hr-text-muted);
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  font-weight: 700;
+  border-bottom: 1px solid var(--hr-border);
+  white-space: nowrap;
+}
+.hr-table td {
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--hr-border);
+  vertical-align: middle;
+}
+.hr-table tr:last-child td { border-bottom: none; }
+.hr-table tr:hover { background: rgba(96,165,250,.04); }
+.hr-hours-cell {
+  font-family: 'Fira Code', monospace;
+  font-weight: 700;
+}
+.hr-hours-cell.pos { color: var(--hr-success); }
+.hr-hours-cell.neg { color: var(--hr-danger); }
+.hr-del-btn {
+  background: none;
+  border: 1px solid rgba(239,68,68,.3);
+  color: #f87171;
+  border-radius: 6px;
+  padding: 4px 10px;
+  font-size: 11px;
+  cursor: pointer;
+  transition: all .15s;
+}
+.hr-del-btn:hover { background: rgba(239,68,68,.14); border-color: #f87171; }
+.hr-empty {
+  text-align: center;
+  padding: 32px;
+  color: var(--hr-text-muted);
+  font-size: 14px;
+}
+
+/* ── TOAST ────────────────────────────────────────────── */
+.hr-toast {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  background: var(--hr-success);
+  color: #fff;
+  padding: 12px 20px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 700;
+  box-shadow: 0 8px 24px rgba(0,0,0,.3);
+  transform: translateY(80px);
+  opacity: 0;
+  transition: all .3s ease;
+  z-index: 9999;
+}
+.hr-toast.show { transform: translateY(0); opacity: 1; }
+.hr-toast.error { background: var(--hr-danger); }
+</style>
+</head>
+<body>
+<office-nav></office-nav>
+
+<div class="hr-wrap">
+  <div class="hr-header">
+    <a href="/" class="hr-back">← Home</a>
+    <h1>⏰ Banco de Horas</h1>
+  </div>
+
+  <!-- SALDO PESSOAL -->
+  <div class="hr-saldo-card">
+    <div>
+      <div class="hr-saldo-num zero" id="saldo-num">0h</div>
+      <div class="hr-saldo-label">Saldo acumulado</div>
+    </div>
+    <div style="flex:1;min-width:0">
+      <div style="font-size:12px;color:var(--hr-text-muted);line-height:1.6">
+        Registre horas a mais (<strong style="color:var(--hr-success)">+</strong>) ou a menos
+        (<strong style="color:var(--hr-danger)">−</strong>). Saldo acumulativo, sem validade.
+      </div>
+    </div>
+  </div>
+
+  <!-- PAINEL DO TIME (só head) -->
+  <div id="team-section" style="display:none">
+    <h2 style="font-size:16px;font-weight:700;margin:0 0 12px">👥 Visão do time</h2>
+    <div class="hr-team-grid" id="team-grid"></div>
+  </div>
+
+  <!-- FORMULÁRIO -->
+  <div class="hr-form-card">
+    <div class="hr-form-title">➕ Registrar horas</div>
+    <form id="horas-form" class="hr-form-grid" autocomplete="off">
+      <div class="hr-field">
+        <label for="f-date">Data</label>
+        <input type="date" id="f-date" required>
+      </div>
+      <div class="hr-field">
+        <label for="f-hours">Horas</label>
+        <input type="number" id="f-hours" step="0.5" min="-24" max="24" placeholder="+2" required>
+      </div>
+      <div class="hr-field">
+        <label for="f-reason">Motivo</label>
+        <input type="text" id="f-reason" placeholder="Ex: evento SAP, deadline campanha…" maxlength="500">
+      </div>
+      <div class="hr-field">
+        <label>&nbsp;</label>
+        <button type="submit" class="hr-btn" id="f-submit">Registrar</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- HISTÓRICO -->
+  <h2 style="font-size:16px;font-weight:700;margin:0 0 12px" id="hist-title">📋 Meu histórico</h2>
+  <div class="hr-table-wrap">
+    <table class="hr-table">
+      <thead>
+        <tr>
+          <th>Data</th>
+          <th>Horas</th>
+          <th>Motivo</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody id="hist-body">
+        <tr><td colspan="4" class="hr-empty">Carregando…</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="hr-toast" id="toast"></div>
+
+<script src="/js/office-nav.js"></script>
+<script src="/js/horas.js"></script>
+</body>
+</html>

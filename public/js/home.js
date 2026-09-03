@@ -955,6 +955,30 @@
     } catch (e) { list.innerHTML = ''; }
   }
 
+  // ── BANCO DE HORAS — mini-card na home ──────────────────────────
+  async function renderHorasSaldo() {
+    try {
+      const r = await fetch('/api/horas/saldo');
+      if (!r.ok) return;
+      const d = await r.json();
+      const saldo = d.meu;
+      const sign = saldo > 0 ? '+' : '';
+      const cor = saldo > 0 ? 'var(--home-success,#10b981)' : saldo < 0 ? 'var(--home-danger,#ef4444)' : 'var(--home-text-muted,#869ec3)';
+      const card = document.createElement('a');
+      card.href = '/horas';
+      card.className = 'home-digest-card';
+      card.style.textDecoration = 'none';
+      card.style.color = 'inherit';
+      card.style.cursor = 'pointer';
+      card.innerHTML = `
+        <div class="label">Banco de Horas</div>
+        <div class="value" style="color:${cor}">${sign}${saldo.toFixed(1).replace('.0','')}h</div>
+        <div class="sub">${saldo === 0 ? 'saldo zerado' : 'saldo acumulado'}</div>`;
+      const grid = $('digest-grid');
+      if (grid) grid.appendChild(card);
+    } catch {}
+  }
+
   // ── FRESHNESS CHIPS (S39 — Regra 7 automática) ──────────────────
   async function renderFreshness() {
     try {
@@ -999,6 +1023,7 @@
   function init() {
     renderHero();
     renderDigest();
+    renderHorasSaldo();
     renderMetas();
     renderAreas();
     initEventos();
