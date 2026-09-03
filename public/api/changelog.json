@@ -1,6 +1,6 @@
 {
-  "current": "0.88.3",
-  "atualizado_em": "18/ago/2026",
+  "current": "0.89.0",
+  "atualizado_em": "03/set/2026",
   "next": [
     {
       "version": "0.53.0",
@@ -54,9 +54,17 @@
   ],
   "releases": [
     {
+      "version": "0.89.0",
+      "date": "03/set/2026",
+      "status": "current",
+      "title": "⏰ Banco de Horas MKT — controle interno de horas extras/a menos",
+      "summary": "Novo módulo para o time registrar horas a mais (+) ou a menos (-), com saldo acumulativo por pessoa. Visibilidade pessoal via SSO (head vê painel do time inteiro). Notifica Rudá via email quando alguém ultrapassa +8h. Card de saldo na home + atalho nos acessos rápidos.",
+      "highlights": ["Página /horas com form + histórico", "Painel do time (head only)", "Email automático a cada +8h acumuladas", "Card saldo no Daily Digest da home"]
+    },
+    {
       "version": "0.88.3",
       "date": "18/ago/2026",
-      "status": "current",
+      "status": "previous",
       "path": "/",
       "title": "🚨 Hotfix: o Office estava fora do ar",
       "highlights": [
